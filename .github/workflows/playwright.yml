@@ -36,5 +36,5 @@ jobs:
       - name: Run Playwright tests with report
         uses: microsoft/playwright-github-action@v1
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.MY_TOKEN }}
           show-report: true
