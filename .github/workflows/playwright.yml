@@ -1,57 +1,27 @@
 name: Playwright Tests
-
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-
     steps:
-      # 1️⃣ Checkout repository
-      - uses: actions/checkout@v4
-
-      # 2️⃣ Setup Node.js
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-
-      # 3️⃣ Install dependencies
-      - name: Install dependencies
-        run: npm ci
-
-      # 4️⃣ Install Playwright browsers
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
-
-      # 5️⃣ Run setup project to generate storageState
-      - name: Generate storageState for login
-        run: npx playwright test tests/setupAuth.ts
-
-      # 6️⃣ Run all Playwright tests with HTML + GitHub reporter
-      - name: Run Playwright tests
-        run: npx playwright test --reporter=html,github
-
-      # 7️⃣ Upload HTML report as artifact (for download)
-      - name: Upload HTML Report Artifact
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
-          retention-days: 30
-
-      # 8️⃣ Deploy HTML report to GitHub Pages
-      - name: Deploy Playwright Report to GitHub Pages
-        if: ${{ always() }}
-        uses: peaceiris/actions-gh-pages@v6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./playwright-report
-          publish_branch: gh-pages
-          user_name: github-actions
-          user_email: github-actions@github.com
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    - name: Run Playwright tests
+      run: npx playwright test
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
