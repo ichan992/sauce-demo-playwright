@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
+      # 1️⃣ Checkout repository
       - uses: actions/checkout@v4
 
       # 2️⃣ Setup Node.js
@@ -28,12 +28,16 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      # 5️⃣ Run Playwright tests
-      - name: Run Playwright tests
-        run: npx playwright test --reporter=github
+      # 5️⃣ Run setup project to generate storageState
+      - name: Generate storageState for login
+        run: npx playwright test tests/setupAuth.ts
 
-      # 6️⃣ Upload HTML report artifact
-      - name: Upload HTML Report
+      # 6️⃣ Run all Playwright tests with HTML + GitHub reporter
+      - name: Run Playwright tests
+        run: npx playwright test --reporter=html,github
+
+      # 7️⃣ Upload HTML report as artifact (for download)
+      - name: Upload HTML Report Artifact
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
@@ -41,8 +45,13 @@ jobs:
           path: playwright-report
           retention-days: 30
 
-      # 7️⃣ Add report link as PR comment
-      - name: Comment HTML Report URL
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "HTML Report available: [Download Report](${{ github.server_url }}/${{ github.repository }}/suites/${{ github.run_id }}/artifacts)"
+      # 8️⃣ Deploy HTML report to GitHub Pages
+      - name: Deploy Playwright Report to GitHub Pages
+        if: ${{ always() }}
+        uses: peaceiris/actions-gh-pages@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          publish_branch: gh-pages
+          user_name: github-actions
+          user_email: github-actions@github.com
